@@ -1200,6 +1200,59 @@ async function createFixtureScoreFromJSON(fixture, fixtureId, type) {
 	return dbScore;
 }
 
+async function createOddsFromJSON(odd) {
+	var newOdds = [];
+	const fixture = await db.fixtures.findOne({
+		where: { id: odd.fixture.id },
+	});
+	if (fixture === null) {
+		logger.error(`the fixture ${odd.fixture.id} does not exist`);
+		return newOdds;
+	}
+	// the update time from api
+	const update = odd.update;
+
+	const updateCount = await db.odds.count({
+		where: { update: update, fixtureId: fixture.id },
+	});
+
+	if (updateCount > 0) {
+		logger.info(`the fixture ${odd.fixture.id} is up to date!`);
+		return newOdds;
+	}
+	// loop every bookmaker
+	for (const bookmaker of odd.bookmakers) {
+		for (const bet of bookmaker.bets) {
+			//if (bet.id === 1 || bet.id === 12) {
+			if (bet.id === 1) {
+				for (const value of bet.values) {
+					// if this updated
+					var [newOdd, created] = await db.odds.findOrCreate({
+						where: {
+							fixtureId: fixture.id,
+							bookmakerId: bookmaker.id,
+							betId: bet.id,
+							update: update,
+							value: value.value.toString(),
+						},
+						defaults: {
+							odd: value.odd,
+						},
+					});
+
+					if (created) {
+						logger.info(
+							`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
+						);
+					}
+					newOdds.push(newOdd);
+				}
+			}
+		}
+	}
+
+	return newOdds;
+}
 function formatDate(date) {
 	var d = new Date(date),
 		month = '' + (d.getMonth() + 1),
@@ -1228,53 +1281,50 @@ exports.taskOddsUpToDate = async (date) => {
 				`=== Fetched odds ${step} - ${odds.length} for fixture ${odd.fixture.id} ===`
 			);
 
-			const fixture = await db.fixtures.findOne({
-				where: { id: odd.fixture.id },
-			});
-			if (fixture === null) {
-				logger.error(`the fixture ${odd.fixture.id} does not exist`);
-			} else {
-				// the update time from api
-				const update = odd.update;
+			newOdds = newOdds.concat(await createOddsFromJSON(odd));
+		}
 
-				const updateCount = await db.odds.count({
-					where: { update: update, fixtureId: fixture.id },
-				});
+		logger.info(`total odds ${newOdds.length} is created`);
+		return newOdds;
+	} catch (err) {
+		logger.error(`Failed to fetch odds: ${err.message}`);
+	}
+};
 
-				if (updateCount > 0) {
-					logger.info(`the fixture ${odd.fixture.id} is up to date!`);
-					continue;
-				}
-				// loop every bookmaker
-				for (const bookmaker of odd.bookmakers) {
-					for (const bet of bookmaker.bets) {
-						//if (bet.id === 1 || bet.id === 12) {
-						if (bet.id === 1) {
-							for (const value of bet.values) {
-								// if this updated
-								var [newOdd, created] = await db.odds.findOrCreate({
-									where: {
-										fixtureId: fixture.id,
-										bookmakerId: bookmaker.id,
-										betId: bet.id,
-										update: update,
-										value: value.value.toString(),
-									},
-									defaults: {
-										odd: value.odd,
-									},
-								});
+exports.taskOddsUpdateRecentHourly = async (hours) => {
+	const currentTime = moment();
+	const upToTime = moment().add(hours, 'hours');
+	logger.info(
+		`============ Fetch odds in recent ${hours} hours ${currentTime} - ${upToTime} updated started ============`
+	);
+	try {
+		// get all leagues
+		const fixtures = await db.fixtures.findAll({
+			where: {
+				date: { [Op.between]: [currentTime, upToTime] },
+				statusCode: 'NS',
+			},
+			order: ['date'],
+		});
 
-								if (created) {
-									logger.info(
-										`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
-									);
-								}
-								newOdds.push(newOdd);
-							}
-						}
-					}
-				}
+		let count = 0;
+		var newOdds = [];
+		// loop all the leagues
+		for (const fixture of fixtures) {
+			count = count + 1;
+			logger.info(`[${fixture.id}] odds - fixtures total ${count} - ${fixtures.length} to go`);
+
+			// odds
+			const odds = await dataService.getOddsByFixtureId(fixture.id);
+
+			if (odds === undefined || odds.length === 0) {
+				logger.info(`[${fixture.id}] fixture ${fixture.id} has no odds for update!`);
+				continue;
+			}
+
+			logger.info(`[${fixture.id}] fixture ${fixture.id} total odds is : ${odds.length}`);
+			for (const odd of odds) {
+				newOdds = newOdds.concat(await createOddsFromJSON(odd));
 			}
 		}
 
@@ -1329,27 +1379,4 @@ exports.taskFixturesUpToDate = async (date) => {
 			`Failed to fetch fixture by date: ${err.message} sql: ${err.sql}`
 		);
 	}
-};
-
-exports.getSchedulerByDate = async (req, res, next) => {
-	const date = moment(req.params.date, 'YYYY-MM-DD');
-	const nextDate = date.add(1, 'days');
-
-	const schedulerLogs = await db.schedulerLogs.findAll({
-		where: { start: { [Op.between]: [date, nextDate] } },
-		order: [['start', 'DESC']],
-	});
-
-	res.send(schedulerLogs);
-};
-
-exports.getSchedulerRecent = async (req, res, next) => {
-	const count = req.params.count;
-
-	const schedulerLogs = await db.schedulerLogs.findAll({
-		order: [['start', 'DESC']],
-		limit: count,
-	});
-
-	res.send(schedulerLogs);
 };

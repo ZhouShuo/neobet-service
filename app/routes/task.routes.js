@@ -51,9 +51,6 @@ module.exports = (app) => {
 	// fetch odd by league
 	router.get('/odd-uptodate/:date', tasks.fetchOddsUpToDate);
 
-	// scheduler 
-	router.get('/scheduler/:date', tasks.getSchedulerByDate);
-	router.get('/scheduler/recent/:count', tasks.getSchedulerRecent);
 
 	app.use('/api/tasks', router);
 };

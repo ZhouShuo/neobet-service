@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 	res.json({ message: 'Welcome to neo bet application.' });
 });
 
-require('./app/routes')(app);
+require('./app/routes').default(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
@@ -41,3 +41,4 @@ app.listen(PORT, () => {
 const scheduler = require('./app/tasks/scheduler');
 scheduler.scheduledQuarterTask();
 scheduler.scheduledHourlyTask();
+scheduler.scheduledMinuesTask();

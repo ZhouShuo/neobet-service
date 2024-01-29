@@ -15,7 +15,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
 		idle: dbConfig.pool.idle,
 	},
 	logQueryParameters: true,
-	//logging: e => logger.info(e),
+	//logging: (e) => logger.info(e),
 	logging: false,
 
 	dialectOptions: {

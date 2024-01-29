@@ -12,6 +12,7 @@ const QUARTERLY_UPDATE_ODD_TODAY = 'Quarterly update odd today';
 const QUARTERLY_UPDATE_ODD_TOMORROW = 'Quarterly update odd tomorrow';
 const HOURLY_UPDATE_FIXTURE_TOMORROW = 'Hourly update fixture tomorrow';
 const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
+const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledQuarterTask = () =>
 	schedule.scheduleJob('*/15 * * * *', async () => {
@@ -26,6 +27,13 @@ exports.scheduledQuarterTask = () =>
 		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
 		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TODAY, today);
 		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TOMORROW, tomorrow);
+	});
+
+exports.scheduledMinuesTask = () =>
+	schedule.scheduleJob('*/10 * * * *', async () => {
+		const hours = 1;
+
+		updateOddsUpcoming(TENMINUES_UPDATE_ODD_NEXT_HOUR, hours);
 	});
 
 exports.scheduledHourlyTask = () =>
@@ -44,10 +52,19 @@ const updateFixtureQuarterly = async (type, date) => {
 		start: moment(),
 	});
 	await schedulerLog.save();
-	const updatedFixtures = await tasks.taskFixturesUpToDate(date);
-	logger.info(`${updatedFixtures.length} fixtures updated`);
-	schedulerLog.message = `${type} - ${date} - ${updatedFixtures.length} fixtures updated`;
-	schedulerLog.success = true;
+	try {
+		const updatedFixtures = await tasks.taskFixturesUpToDate(date);
+		logger.info(`${updatedFixtures.length} fixtures updated`);
+		schedulerLog.message = `${type} - ${date} - ${updatedFixtures.length} fixtures updated`;
+		schedulerLog.success = true;
+	} catch (err) {
+		logger.error(
+			`failed update the fixture on ${type} - ${date} - error: ${err}`
+		);
+		schedulerLog.message = `failed update the fixture on ${type} - ${date} - error: ${err}`;
+		schedulerLog.success = false;
+	}
+
 	schedulerLog.end = moment();
 	await schedulerLog.save();
 };
@@ -59,10 +76,39 @@ const updateOddsQuarterly = async (type, date) => {
 		start: moment(),
 	});
 	await schedulerLog.save();
-	const updatedOdds = await tasks.taskOddsUpToDate(date);
-	logger.info(`${updatedOdds.length} odds updated`);
-	schedulerLog.message = `${type} - ${date} - ${updatedOdds.length} odds updated`;
-	schedulerLog.success = true;
+	try {
+		const updatedOdds = await tasks.taskOddsUpToDate(date);
+		logger.info(`${updatedOdds.length} odds updated`);
+		schedulerLog.message = `${type} - ${date} - ${updatedOdds.length} odds updated`;
+		schedulerLog.success = true;
+	} catch (err) {
+		logger.error(`failed update the odds on ${type} - ${date} - error: ${err}`);
+		schedulerLog.message = `failed update the odds on ${type} - ${date} - error: ${err}`;
+		schedulerLog.success = false;
+	}
+	schedulerLog.end = moment();
+	await schedulerLog.save();
+};
+
+const updateOddsUpcoming = async (type, hours) => {
+	logger.info(`======= ${type} - ${hours} =======`);
+	const schedulerLog = await db.schedulerLogs.create({
+		type: type,
+		start: moment(),
+	});
+	await schedulerLog.save();
+	try {
+		const updatedOdds = await tasks.taskOddsUpdateRecentHourly(hours);
+		logger.info(`${updatedOdds.length} odds updated`);
+		schedulerLog.message = `${type} - ${hours} - ${updatedOdds.length} odds updated`;
+		schedulerLog.success = true;
+	} catch (err) {
+		logger.error(
+			`failed update the odds on ${type} - ${hours} - error: ${err}`
+		);
+		schedulerLog.message = `failed update the odds on ${type} - ${hours} - error: ${err}`;
+		schedulerLog.success = false;
+	}
 	schedulerLog.end = moment();
 	await schedulerLog.save();
 };

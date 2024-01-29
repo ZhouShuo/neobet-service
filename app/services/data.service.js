@@ -1,5 +1,10 @@
 const axios = require('axios');
 const logger = require('../config/logger.config')('axios');
+const RateLimiter = require('limiter').RateLimiter;
+const limiter = new RateLimiter({
+	tokensPerInterval: 1,
+	interval: 6000,
+});
 
 /*
 axios.interceptors.request.use(request => {
@@ -250,6 +255,7 @@ exports.getOdds = async (league, season) => {
 			var options = getOptions(
 				`odds?league=${league.id}&season=${season}&page=${currentPage}`
 			);
+			await limiter.removeTokens(1);
 			logger.info('request from ' + options.url);
 			var response = await axios.request(options);
 			var odds = response.data.response;
@@ -273,13 +279,29 @@ exports.getOdds = async (league, season) => {
 
 exports.getOddsByFixtureId = async (fixtureId) => {
 	try {
-		var options = getOptions(`odds?fixture=${fixtureId}`);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var odds = response.data.response;
-		logger.info('response :' + response);
+		var returnOdds = [];
+		let currentPage = 1;
+		let totalPage = 1;
+		while (currentPage <= totalPage) {
+			// odds
+			var options = getOptions(`odds?fixture=${fixtureId}&page=${currentPage}`);
 
-		return odds;
+			await limiter.removeTokens(1);
+			logger.info('request from ' + options.url);
+			var response = await axios.request(options);
+			var odds = response.data.response;
+			var paging = response.data.paging;
+
+			if (paging != null) {
+				totalPage = paging.total;
+			}
+			logger.info(`${currentPage} total odds is : ${odds.length}`);
+
+			currentPage = currentPage + 1;
+			returnOdds = returnOdds.concat(odds);
+		}
+
+		return returnOdds;
 	} catch (error) {
 		logger.error(error);
 		return error;
@@ -294,6 +316,7 @@ exports.getOddsByDate = async (date) => {
 		while (currentPage <= totalPage) {
 			// odds
 			var options = getOptions(`odds?date=${date}&page=${currentPage}`);
+			await limiter.removeTokens(1);
 			logger.info('request from ' + options.url);
 			var response = await axios.request(options);
 			var odds = response.data.response;
