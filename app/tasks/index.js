@@ -3,6 +3,11 @@ const { Op } = require('sequelize');
 const logger = require('../config/logger.config')('task');
 const dataService = require('../services/data.service');
 const moment = require('moment');
+const RateLimiter = require('limiter').RateLimiter;
+const limiter = new RateLimiter({
+	tokensPerInterval: 1,
+	interval: 2000,
+});
 
 exports.getUpdateDates = (req, res, next) => {
 	let recentDates = [];
@@ -411,6 +416,7 @@ exports.fetchRounds = async (req, res, next) => {
 					`get rounds from season ${league.id} - ${league.name} - ${season.year}`
 				);
 				// get round by this season
+				await limiter.removeTokens(1);
 				const rounds = await dataService.getRounds(league, season);
 				for (const round of rounds) {
 					var [newRound, created] = await db.rounds.findOrCreate({
@@ -612,6 +618,7 @@ exports.fetchFixturesUpdate = async (req, res, next) => {
 				// get fixture from data service api
 				const fixtures = await dataService.getFixturesBySeason(league, season);
 				for (const fixture of fixtures) {
+					await limiter.removeTokens(1);
 					const dbFixture = await createFixtureFromJSON(fixture, season.id);
 					logger.info(
 						`Finished ${dbFixture.id} season for ${year} for: ${league.id} - ${league.name}`
@@ -732,6 +739,7 @@ exports.fetchFixtureByDate = async (req, res, next) => {
 						`Does not have season for ${fixture.league.season} for: ${fixture.league.id} - ${fixture.league.name}`
 					);
 				} else {
+					await limiter.removeTokens(1);
 					const dbFixture = await createFixtureFromJSON(fixture, season.id);
 					logger.info(
 						`Finished ${dbFixture.id} season for ${fixture.league.season} for: ${fixture.league.id} - ${fixture.league.name}`
@@ -895,7 +903,7 @@ exports.fetchOddsByDate = async (req, res, next) => {
 			logger.info(
 				`=== Fetched odds ${step} - ${odds.length} for fixture ${odd.fixture.id} ===`
 			);
-
+			await limiter.removeTokens(1);
 			const fixture = await db.fixtures.findOne({
 				where: { id: odd.fixture.id },
 			});
@@ -1280,7 +1288,7 @@ exports.taskOddsUpToDate = async (date) => {
 			logger.info(
 				`=== Fetched odds ${step} - ${odds.length} for fixture ${odd.fixture.id} ===`
 			);
-
+			await limiter.removeTokens(1);
 			newOdds = newOdds.concat(await createOddsFromJSON(odd));
 		}
 
@@ -1312,17 +1320,23 @@ exports.taskOddsUpdateRecentHourly = async (hours) => {
 		// loop all the leagues
 		for (const fixture of fixtures) {
 			count = count + 1;
-			logger.info(`[${fixture.id}] odds - fixtures total ${count} - ${fixtures.length} to go`);
+			logger.info(
+				`[${fixture.id}] odds - fixtures total ${count} - ${fixtures.length} to go`
+			);
 
 			// odds
 			const odds = await dataService.getOddsByFixtureId(fixture.id);
 
 			if (odds === undefined || odds.length === 0) {
-				logger.info(`[${fixture.id}] fixture ${fixture.id} has no odds for update!`);
+				logger.info(
+					`[${fixture.id}] fixture ${fixture.id} has no odds for update!`
+				);
 				continue;
 			}
 
-			logger.info(`[${fixture.id}] fixture ${fixture.id} total odds is : ${odds.length}`);
+			logger.info(
+				`[${fixture.id}] fixture ${fixture.id} total odds is : ${odds.length}`
+			);
 			for (const odd of odds) {
 				newOdds = newOdds.concat(await createOddsFromJSON(odd));
 			}
@@ -1361,6 +1375,7 @@ exports.taskFixturesUpToDate = async (date) => {
 						`Does not have season for ${fixture.league.season} for: ${fixture.league.id} - ${fixture.league.name}`
 					);
 				} else {
+					await limiter.removeTokens(1);
 					const dbFixture = await createFixtureFromJSON(fixture, season.id);
 					logger.info(
 						`Finished ${dbFixture.id} season for ${fixture.league.season} for: ${fixture.league.id} - ${fixture.league.name}`
