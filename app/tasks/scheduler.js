@@ -15,7 +15,7 @@ const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
 const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledQuarterTask = () =>
-	schedule.scheduleJob('*/30 * * * *', async () => {
+	schedule.scheduleJob('30 * * * *', async () => {
 		let recentDates = [];
 		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
 		const today = moment().format('YYYY-MM-DD');

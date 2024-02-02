@@ -6,7 +6,7 @@ const moment = require('moment');
 const RateLimiter = require('limiter').RateLimiter;
 const limiter = new RateLimiter({
 	tokensPerInterval: 1,
-	interval: 2000,
+	interval: 500,
 });
 
 exports.getUpdateDates = (req, res, next) => {
@@ -393,6 +393,50 @@ exports.fetchTeams = async (req, res, next) => {
 		logger.error(`Failed to fetch team: ${err.message}`);
 		res.status(500).send({
 			message: err.message || 'Failed to fetch team:',
+		});
+	}
+};
+exports.fetchRoundsByLeague = async (req, res, next) => {
+	const id = req.params.id;
+	logger.info(`============ Fetch rounds started ============`);
+	try {
+		// get all leagues
+		const league = await db.leagues.findOne({ where: { id: id } });
+		const newRounds = [];
+		logger.info(`start fetch round for: ${league.id} - ${league.name}`);
+
+		// get the season by this league for now
+		const seasons = await db.seasons.findAll({
+			where: { leagueId: league.id },
+		});
+		for (const season of seasons) {
+			logger.info(
+				`get rounds from season ${league.id} - ${league.name} - ${season.year}`
+			);
+			// get round by this season
+			await limiter.removeTokens(1);
+			const rounds = await dataService.getRounds(league, season);
+			for (const round of rounds) {
+				var [newRound, created] = await db.rounds.findOrCreate({
+					where: { name: round, seasonId: season.id },
+				});
+
+				if (created) {
+					logger.info(
+						`Created new round is : ${newRound.id} ${newRound.name} `
+					);
+				}
+				newRounds.push(newRound);
+			}
+		}
+
+		// response to client
+		logger.info(`total rounds ${newRounds.length} is created`);
+		res.send(newRounds);
+	} catch (err) {
+		logger.error(`Failed to fetch round: ${err.message}`);
+		res.status(500).send({
+			message: err.message || 'Failed to fetch round:',
 		});
 	}
 };

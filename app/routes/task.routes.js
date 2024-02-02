@@ -24,6 +24,8 @@ module.exports = (app) => {
 
 	// fetch round
 	router.get('/round', tasks.fetchRounds);
+	// fetch round by league
+	router.get('/round-by-league/:id', tasks.fetchRoundsByLeague);
 
 	// fetch fixture
 	router.get('/fixture/:year', tasks.fetchFixtures);
@@ -50,7 +52,6 @@ module.exports = (app) => {
 	router.get('/odd-date/:date', tasks.fetchOddsByDate);
 	// fetch odd by league
 	router.get('/odd-uptodate/:date', tasks.fetchOddsUpToDate);
-
 
 	app.use('/api/tasks', router);
 };
