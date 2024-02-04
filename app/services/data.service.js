@@ -3,7 +3,7 @@ const logger = require('../config/logger.config')('axios');
 const RateLimiter = require('limiter').RateLimiter;
 const limiter = new RateLimiter({
 	tokensPerInterval: 1,
-	interval: 6000,
+	interval: 1000,
 });
 
 /*

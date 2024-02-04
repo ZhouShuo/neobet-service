@@ -21,14 +21,28 @@ exports.scheduledQuarterTask = () =>
 		const today = moment().format('YYYY-MM-DD');
 		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 
-		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
+		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
 		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TODAY, today);
 		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
-		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
+		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
 		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TODAY, today);
 		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TOMORROW, tomorrow);
 	});
 
+exports.scheduledQuarterTask = () =>
+	schedule.scheduleJob('0 * * * *', async () => {
+		let recentDates = [];
+		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+		const today = moment().format('YYYY-MM-DD');
+		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+
+		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
+		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TODAY, today);
+		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
+		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
+		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TODAY, today);
+		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TOMORROW, tomorrow);
+	});
 
 exports.scheduledMinuesTask = () =>
 	schedule.scheduleJob('*/10 * * * *', async () => {
@@ -38,7 +52,7 @@ exports.scheduledMinuesTask = () =>
 	});
 
 exports.scheduledHourlyTask = () =>
-	schedule.scheduleJob('0 */2 * * *', async () => {
+	schedule.scheduleJob('15 */2 * * *', async () => {
 		let recentDates = [];
 		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 
@@ -48,68 +62,95 @@ exports.scheduledHourlyTask = () =>
 
 const updateFixtureQuarterly = async (type, date) => {
 	logger.info(`======= ${type} - ${date} =======`);
-	const schedulerLog = await db.schedulerLogs.create({
-		type: type,
-		start: moment(),
-	});
-	await schedulerLog.save();
-	try {
-		const updatedFixtures = await tasks.taskFixturesUpToDate(date);
-		logger.info(`${updatedFixtures.length} fixtures updated`);
-		schedulerLog.message = `${type} - ${date} - ${updatedFixtures.length} fixtures updated`;
-		schedulerLog.success = true;
-	} catch (err) {
-		logger.error(
-			`failed update the fixture on ${type} - ${date} - error: ${err}`
-		);
-		schedulerLog.message = `failed update the fixture on ${type} - ${date} - error: ${err}`;
-		schedulerLog.success = false;
-	}
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		await schedulerLog.save();
+		try {
+			const updatedFixtures = await tasks.taskFixturesUpToDate(date);
+			logger.info(`${updatedFixtures.length} fixtures updated`);
+			schedulerLog.message = `${type} - ${date} - ${updatedFixtures.length} fixtures updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(
+				`failed update the fixture on ${type} - ${date} - error: ${err}`
+			);
+			schedulerLog.message = `failed update the fixture on ${type} - ${date} - error: ${err}`;
+			schedulerLog.success = false;
+		}
 
-	schedulerLog.end = moment();
-	await schedulerLog.save();
+		schedulerLog.end = moment();
+		await schedulerLog.save();
+	}
 };
 
 const updateOddsQuarterly = async (type, date) => {
 	logger.info(`======= ${type} - ${date} =======`);
-	const schedulerLog = await db.schedulerLogs.create({
-		type: type,
-		start: moment(),
-	});
-	await schedulerLog.save();
-	try {
-		const updatedOdds = await tasks.taskOddsUpToDate(date);
-		logger.info(`${updatedOdds.length} odds updated`);
-		schedulerLog.message = `${type} - ${date} - ${updatedOdds.length} odds updated`;
-		schedulerLog.success = true;
-	} catch (err) {
-		logger.error(`failed update the odds on ${type} - ${date} - error: ${err}`);
-		schedulerLog.message = `failed update the odds on ${type} - ${date} - error: ${err}`;
-		schedulerLog.success = false;
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		await schedulerLog.save();
+		try {
+			const updatedOdds = await tasks.taskOddsUpToDate(date);
+			logger.info(`${updatedOdds.length} odds updated`);
+			schedulerLog.message = `${type} - ${date} - ${updatedOdds.length} odds updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(
+				`failed update the odds on ${type} - ${date} - error: ${err}`
+			);
+			schedulerLog.message = `failed update the odds on ${type} - ${date} - error: ${err}`;
+			schedulerLog.success = false;
+		}
+		schedulerLog.end = moment();
+		await schedulerLog.save();
 	}
-	schedulerLog.end = moment();
-	await schedulerLog.save();
 };
 
 const updateOddsUpcoming = async (type, hours) => {
 	logger.info(`======= ${type} - ${hours} =======`);
-	const schedulerLog = await db.schedulerLogs.create({
-		type: type,
-		start: moment(),
-	});
-	await schedulerLog.save();
-	try {
-		const updatedOdds = await tasks.taskOddsUpdateRecentHourly(hours);
-		logger.info(`${updatedOdds.length} odds updated`);
-		schedulerLog.message = `${type} - ${hours} - ${updatedOdds.length} odds updated`;
-		schedulerLog.success = true;
-	} catch (err) {
-		logger.error(
-			`failed update the odds on ${type} - ${hours} - error: ${err}`
-		);
-		schedulerLog.message = `failed update the odds on ${type} - ${hours} - error: ${err}`;
-		schedulerLog.success = false;
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		await schedulerLog.save();
+		try {
+			const updatedOdds = await tasks.taskOddsUpdateRecentHourly(hours);
+			logger.info(`${updatedOdds.length} odds updated`);
+			schedulerLog.message = `${type} - ${hours} - ${updatedOdds.length} odds updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(
+				`failed update the odds on ${type} - ${hours} - error: ${err}`
+			);
+			schedulerLog.message = `failed update the odds on ${type} - ${hours} - error: ${err}`;
+			schedulerLog.success = false;
+		}
+		schedulerLog.end = moment();
+		await schedulerLog.save();
 	}
-	schedulerLog.end = moment();
-	await schedulerLog.save();
+};
+
+const existingSchedule = async (type) => {
+	const existingSchedulerLogs = await db.schedulerLogs.findAll({
+		where: {
+			type: type,
+			end: null,
+		},
+	});
+	if (existingSchedulerLogs != null && existingSchedulerLogs.length > 0) {
+		logger.info(`==== ${type} already has scheduler running`);
+		return true;
+	} else {
+		logger.info(`==== ${type} scheduler is not running`);
+		return false;
+	}
 };
