@@ -14,7 +14,7 @@ const HOURLY_UPDATE_FIXTURE_TOMORROW = 'Hourly update fixture tomorrow';
 const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
 const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 // setup a 15 min schedule job to update recent odds and fixtures
-exports.scheduledQuarterTask = () =>
+exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
 		let recentDates = [];
 		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
@@ -68,7 +68,6 @@ const updateFixtureQuarterly = async (type, date) => {
 			type: type,
 			start: moment(),
 		});
-		await schedulerLog.save();
 		try {
 			const updatedFixtures = await tasks.taskFixturesUpToDate(date);
 			logger.info(`${updatedFixtures.length} fixtures updated`);
@@ -95,7 +94,6 @@ const updateOddsQuarterly = async (type, date) => {
 			type: type,
 			start: moment(),
 		});
-		await schedulerLog.save();
 		try {
 			const updatedOdds = await tasks.taskOddsUpToDate(date);
 			logger.info(`${updatedOdds.length} odds updated`);
@@ -121,7 +119,6 @@ const updateOddsUpcoming = async (type, hours) => {
 			type: type,
 			start: moment(),
 		});
-		await schedulerLog.save();
 		try {
 			const updatedOdds = await tasks.taskOddsUpdateRecentHourly(hours);
 			logger.info(`${updatedOdds.length} odds updated`);

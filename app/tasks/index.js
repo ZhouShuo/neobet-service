@@ -896,25 +896,19 @@ exports.fetchOdds = async (req, res, next) => {
 						for (const bet of bookmaker.bets) {
 							if (bet.id === 1 || bet.id === 12) {
 								for (const value of bet.values) {
-									// if this updated
-									var [newOdd, created] = await db.odds.findOrCreate({
-										where: {
-											fixtureId: fixture.id,
-											bookmakerId: bookmaker.id,
-											betId: bet.id,
-											update: update,
-											value: value.value.toString(),
-										},
-										defaults: {
-											odd: value.odd,
-										},
+									var newOdd = await db.odds.create({
+										fixtureId: fixture.id,
+										bookmakerId: bookmaker.id,
+										betId: bet.id,
+										update: update,
+										value: value.value.toString(),
+										odd: value.odd,
 									});
 
-									if (created) {
-										logger.info(
-											`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
-										);
-									}
+									logger.info(
+										`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
+									);
+
 									newOdds.push(newOdd);
 								}
 							}
@@ -972,24 +966,19 @@ exports.fetchOddsByDate = async (req, res, next) => {
 						if (bet.id === 1) {
 							for (const value of bet.values) {
 								// if this updated
-								var [newOdd, created] = await db.odds.findOrCreate({
-									where: {
-										fixtureId: fixture.id,
-										bookmakerId: bookmaker.id,
-										betId: bet.id,
-										update: update,
-										value: value.value.toString(),
-									},
-									defaults: {
-										odd: value.odd,
-									},
+								var newOdd = await db.odds.create({
+									fixtureId: fixture.id,
+									bookmakerId: bookmaker.id,
+									betId: bet.id,
+									update: update,
+									value: value.value.toString(),
+									odd: value.odd,
 								});
 
-								if (created) {
-									logger.info(
-										`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
-									);
-								}
+								logger.info(
+									`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
+								);
+
 								newOdds.push(newOdd);
 							}
 						}
@@ -1039,17 +1028,13 @@ exports.fetchOddsUpToDate = async (req, res, next) => {
 						if (bet.id === 1) {
 							for (const value of bet.values) {
 								// if this updated
-								var [newOdd, created] = await db.odds.findOrCreate({
-									where: {
-										fixtureId: fixture.id,
-										bookmakerId: bookmaker.id,
-										betId: bet.id,
-										update: update,
-										value: value.value.toString(),
-									},
-									defaults: {
-										odd: value.odd,
-									},
+								var newOdd = await db.odds.create({
+									fixtureId: fixture.id,
+									bookmakerId: bookmaker.id,
+									betId: bet.id,
+									update: update,
+									value: value.value.toString(),
+									odd: value.odd,
 								});
 
 								logger.info(
@@ -1279,24 +1264,19 @@ async function createOddsFromJSON(odd) {
 			if (bet.id === 1) {
 				for (const value of bet.values) {
 					// if this updated
-					var [newOdd, created] = await db.odds.findOrCreate({
-						where: {
-							fixtureId: fixture.id,
-							bookmakerId: bookmaker.id,
-							betId: bet.id,
-							update: update,
-							value: value.value.toString(),
-						},
-						defaults: {
-							odd: value.odd,
-						},
+					var newOdd = await db.odds.create({
+						fixtureId: fixture.id,
+						bookmakerId: bookmaker.id,
+						betId: bet.id,
+						update: update,
+						value: value.value.toString(),
+						odd: value.odd,
 					});
 
-					if (created) {
-						logger.info(
-							`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
-						);
-					}
+					logger.info(
+						`Created new odd is : ${newOdd.id} - ${newOdd.fixtureId} - ${newOdd.bookmakerId} - ${newOdd.betId} - ${newOdd.value} - ${newOdd.odd}`
+					);
+
 					newOdds.push(newOdd);
 				}
 			}

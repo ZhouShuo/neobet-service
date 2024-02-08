@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-//const cors = require("cors");
+const cors = require("cors");
 
 const app = express();
 
@@ -22,6 +22,9 @@ app.use(morganlogger);
 // parse requests of content-type - application/json
 app.use(express.json());
 
+// enable cors for now
+app.use(cors());
+
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,6 +42,7 @@ app.listen(PORT, () => {
 });
 
 const scheduler = require('./app/tasks/scheduler');
+scheduler.scheduledHalfHourTask();
 scheduler.scheduledQuarterTask();
 scheduler.scheduledHourlyTask();
 scheduler.scheduledMinuesTask();
