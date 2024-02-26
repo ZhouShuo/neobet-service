@@ -272,18 +272,20 @@ exports.fetchLeagueById = async (req, res, next) => {
 					logger.info('Fetched season is :' + season.year);
 					var [dbSeason, created] = await db.seasons.findOrCreate({
 						where: {
+							leagueId: dbLeague.id,
 							year: season.year,
-							start: season.start,
-							end: season.end,
 						},
 						defaults: {
 							current: season.current,
-							leagueId: dbLeague.id,
+							start: season.start,
+							end: season.end,
 						},
 					});
 
 					if (!created) {
 						dbSeason.current = season.current;
+						dbSeason.start = season.start;
+						dbSeason.end = season.end;
 						await dbSeason.save();
 						logger.info(
 							`Updated season is : ${dbSeason.id} ${dbSeason.year} ${dbSeason.start} - ${dbSeason.end}`
