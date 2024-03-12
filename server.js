@@ -46,3 +46,4 @@ scheduler.scheduledHalfHourTask();
 scheduler.scheduledQuarterTask();
 scheduler.scheduledHourlyTask();
 scheduler.scheduledMinuesTask();
+scheduler.scheduledDailyTask();

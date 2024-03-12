@@ -13,6 +13,8 @@ const QUARTERLY_UPDATE_ODD_TOMORROW = 'Quarterly update odd tomorrow';
 const HOURLY_UPDATE_FIXTURE_TOMORROW = 'Hourly update fixture tomorrow';
 const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
 const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
+const DAILY_UPDATE_LEAGUES = 'daily update leagues';
+const DAILY_UPDATE_TEAMS = 'daily update teams';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
@@ -58,6 +60,12 @@ exports.scheduledHourlyTask = () =>
 
 		updateFixtureQuarterly(HOURLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
 		updateOddsQuarterly(HOURLY_UPDATE_ODD_TOMORROW, tomorrow);
+	});
+
+exports.scheduledDailyTask = () =>
+	schedule.scheduleJob('45 23 * * *', async () => {
+		updateLeagues(DAILY_UPDATE_LEAGUES);
+		updateTeams(DAILY_UPDATE_TEAMS);
 	});
 
 const updateFixtureQuarterly = async (type, date) => {
@@ -129,6 +137,52 @@ const updateOddsUpcoming = async (type, hours) => {
 				`failed update the odds on ${type} - ${hours} - error: ${err}`
 			);
 			schedulerLog.message = `failed update the odds on ${type} - ${hours} - error: ${err}`;
+			schedulerLog.success = false;
+		}
+		schedulerLog.end = moment();
+		await schedulerLog.save();
+	}
+};
+
+const updateLeagues = async (type) => {
+	logger.info(`======= ${type} =======`);
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		try {
+			const updateRounds = await tasks.taskLeaguesUpdate();
+			logger.info(`${updateRounds.length} rounds updated`);
+			schedulerLog.message = `${type} - ${updateRounds.length} rounds updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(`failed update the leagues on ${type} - error: ${err}`);
+			schedulerLog.message = `failed update the leagues on ${type} - error: ${err}`;
+			schedulerLog.success = false;
+		}
+		schedulerLog.end = moment();
+		await schedulerLog.save();
+	}
+};
+
+const updateTeams = async (type) => {
+	logger.info(`======= ${type} =======`);
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		try {
+			const updateTeams = await tasks.taskTeamsUpdate();
+			logger.info(`${updateTeams.length} teams updated`);
+			schedulerLog.message = `${type} - ${updateTeams.length} teams updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(`failed update the teams on ${type} - error: ${err}`);
+			schedulerLog.message = `failed update the teams on ${type} - error: ${err}`;
 			schedulerLog.success = false;
 		}
 		schedulerLog.end = moment();
