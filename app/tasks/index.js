@@ -1421,3 +1421,212 @@ exports.taskFixturesUpToDate = async (date) => {
 		);
 	}
 };
+
+exports.taskLeaguesUpdate = async() => {
+	logger.info(`============ Fetch rounds started ============`);
+	try {
+		// get all leagues
+		const leagues = await updateLeagues();
+		const newRounds = [];
+		for (const league of leagues) {
+			logger.info(`start fetch round for: ${league.id} - ${league.name}`);
+
+			// get the season by this league for now
+			const seasons = await db.seasons.findAll({
+				where: { leagueId: league.id },
+			});
+			for (const season of seasons) {
+				logger.info(
+					`get rounds from season ${league.id} - ${league.name} - ${season.year}`
+				);
+				// get round by this season
+				await limiter.removeTokens(1);
+				const rounds = await dataService.getRounds(league, season);
+				for (const round of rounds) {
+					var [newRound, created] = await db.rounds.findOrCreate({
+						where: { name: round, seasonId: season.id },
+					});
+
+					if (created) {
+						logger.info(
+							`Created new round is : ${newRound.id} ${newRound.name} `
+						);
+					}
+					newRounds.push(newRound);
+				}
+			}
+		}
+
+		logger.info(`total rounds ${newRounds.length} is created`);
+		return newRounds;
+	} catch (err) {
+		logger.error(`Failed to fetch round: ${err.message}`);
+	}
+}
+
+exports.taskTeamsUpdate = async() => {
+	logger.info(`============ Fetch teams started ============`);
+	try {
+		// get all countries
+		const countries = await db.countries.findAll();
+		const newTeams = [];
+		const newVenues = [];
+		for (const country of countries) {
+			logger.info(`start fetch teams for: ${country.code} - ${country.name}`);
+
+			// get teams by this season
+			const teams = await dataService.getTeams(country);
+			for (const team of teams) {
+				var [dbTeam, created] = await db.teams.findOrCreate({
+					where: { id: team.team.id },
+					defaults: {
+						name: team.team.name,
+						founded: team.team.founded,
+						national: team.team.national,
+						logo: team.team.logo,
+						countryId: country.id,
+					},
+				});
+
+				if (!created) {
+					dbTeam.name = team.team.name;
+					dbTeam.founded = team.team.founded;
+					dbTeam.national = team.team.national;
+					dbTeam.logo = team.team.log;
+					await dbTeam.save();
+
+					logger.info(`Updated team is : ${dbTeam.id} ${dbTeam.name}`);
+				} else {
+					logger.info(`Created new team is : ${dbTeam.id} ${dbTeam.name}`);
+				}
+
+				newTeams.push(dbTeam);
+
+				if (team.venue.id != null) {
+					var [dbVenue, created] = await db.venues.findOrCreate({
+						where: { id: team.venue.id },
+						defaults: {
+							name: team.venue.name,
+							address: team.venue.address,
+							city: team.venue.city,
+							capacity: team.venue.capacity,
+							surface: team.venue.surface,
+							image: team.venue.image,
+							countryId: country.id,
+						},
+					});
+
+					if (created) {
+						logger.info(
+							`Created new venue is : ${dbVenue.id} ${dbVenue.city} ${dbVenue.name}`
+						);
+					} else {
+						dbVenue.name = team.venue.name;
+						dbVenue.address = team.venue.address;
+						dbVenue.city = team.venue.city;
+						dbVenue.capacity = team.venue.capacity;
+						dbVenue.surface = team.venue.surface;
+						dbVenue.image = team.venue.image;
+						await dbVenue.save();
+
+						logger.info(
+							`Updated venue is : ${dbVenue.id} ${dbVenue.city} ${dbVenue.name}`
+						);
+					}
+
+					newVenues.push(dbVenue);
+				}
+			}
+		}
+
+		logger.info(`total teams ${newTeams.length} is created`);
+		return newTeams;
+	} catch (err) {
+		logger.error(`Failed to fetch team: ${err.message}`);
+	}
+}
+
+async function updateLeagues() {
+	try {
+		// leagues
+		const leagues = await dataService.getLeagues();
+		logger.info(`total leagues is : ${leagues.length}`);
+		var newLeagues = [];
+		for (const league of leagues) {
+			logger.info(`Fetched league is : ${league.league.name}`);
+			var country = await db.countries.findOne({
+				where: { name: league.country.name },
+			});
+
+			if (country === null) {
+				logger.info(
+					`the league which named ${league.league.name} is not have country ${league.country.name}`
+				);
+
+				continue;
+			}
+			var [dbLeague, created] = await db.leagues.findOrCreate({
+				where: { id: league.league.id },
+				defaults: {
+					name: league.league.name,
+					type: league.league.type,
+					logo: league.league.logo,
+					countryId: country.id,
+				},
+			});
+
+			if (!created) {
+				dbLeague.name = league.league.name;
+				dbLeague.type = league.league.type;
+				dbLeague.logo = league.league.logo;
+				await dbLeague.save();
+
+				logger.info(
+					`Updated league is : ${dbLeague.id} ${dbLeague.name} ${dbLeague.type}`
+				);
+			} else {
+				logger.info(
+					`Created new league is : ${dbLeague.id} ${dbLeague.name} ${dbLeague.type}`
+				);
+			}
+
+			// create seasons
+			for (const season of league.seasons) {
+				logger.info('Fetched season is :' + season.year);
+				var [dbSeason, created] = await db.seasons.findOrCreate({
+					where: {
+						leagueId: dbLeague.id,
+						year: season.year,
+					},
+					defaults: {
+						current: season.current,
+						start: season.start,
+						end: season.end,
+					},
+				});
+
+				if (!created) {
+					dbSeason.current = season.current;
+					dbSeason.start = season.start;
+					dbSeason.end = season.end;
+					await dbSeason.save();
+					logger.info(
+						`Updated season is : ${dbSeason.id} ${dbSeason.year} ${dbSeason.start} - ${dbSeason.end}`
+					);
+				} else {
+					logger.info(
+						`Created new season is : ${dbSeason.id} ${dbSeason.year} ${dbSeason.start} - ${dbSeason.end}`
+					);
+				}
+			}
+
+			newLeagues.push(dbLeague);
+		}
+
+		logger.info(`total leagues ${newLeagues.length} is created`);
+
+		return newLeagues;
+	} catch (err) {
+		logger.error(`Failed to fetch leagues: ${err.message}`);
+	}
+}
