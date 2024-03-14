@@ -17,8 +17,9 @@ module.exports = (app) => {
 
 		return res.status(200).send(result);
 	});
-	// Retrieve all fixture prediction by limit count
-	predictionRouter.get('/recent/:count', async (req, res) => {
+
+	// Retrieve upcoming fixture prediction by limit count
+	predictionRouter.get('/upcoming/:count', async (req, res) => {
 		const count = req.params.count;
 
 		const result = await predictionController.getRecentPredictionFixtures(
@@ -29,8 +30,9 @@ module.exports = (app) => {
 	});
 
 	// retrieve up-coming hours fixtures :3hours for now
-	predictionRouter.get('/up-coming', async (req, res) => {
-		const result = await predictionController.getUpcomingFixtures(3);
+	predictionRouter.get('/upcoming-hour/:hours', async (req, res) => {
+		const hours = req.params.hours;
+		const result = await predictionController.getUpcomingFixtures(hours);
 
 		return res.status(200).send(result);
 	});

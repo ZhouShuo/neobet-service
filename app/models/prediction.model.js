@@ -1,6 +1,11 @@
 module.exports = (sequelize, Sequelize) => {
-	const Prediction = sequelize.define('prediction', {
-		update: { type: Sequelize.DataTypes.DATE },
+	const Predictions = sequelize.define('predictions', {
+		version: {
+			type: Sequelize.DataTypes.STRING
+		},
+		update: { 
+			type: Sequelize.DataTypes.DATE 
+		},
 		rateHome: {
 			type: Sequelize.DataTypes.DECIMAL,
 		},
@@ -51,5 +56,5 @@ module.exports = (sequelize, Sequelize) => {
 		},
 	});
 
-	return Prediction;
+	return Predictions;
 };
