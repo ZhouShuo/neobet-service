@@ -2,6 +2,7 @@ const db = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/logger.config')('task');
 const dataService = require('../services/data.service');
+const predictService = require('../services/prediction.service');
 const moment = require('moment');
 const RateLimiter = require('limiter').RateLimiter;
 const limiter = new RateLimiter({
@@ -1422,7 +1423,7 @@ exports.taskFixturesUpToDate = async (date) => {
 	}
 };
 
-exports.taskLeaguesUpdate = async() => {
+exports.taskLeaguesUpdate = async () => {
 	logger.info(`============ Fetch rounds started ============`);
 	try {
 		// get all leagues
@@ -1462,9 +1463,9 @@ exports.taskLeaguesUpdate = async() => {
 	} catch (err) {
 		logger.error(`Failed to fetch round: ${err.message}`);
 	}
-}
+};
 
-exports.taskTeamsUpdate = async() => {
+exports.taskTeamsUpdate = async () => {
 	logger.info(`============ Fetch teams started ============`);
 	try {
 		// get all countries
@@ -1544,7 +1545,56 @@ exports.taskTeamsUpdate = async() => {
 	} catch (err) {
 		logger.error(`Failed to fetch team: ${err.message}`);
 	}
-}
+};
+
+exports.taskPredictionUpdate = async (version) => {
+	try {
+		let defaultVersion = 'v1.0';
+		const results = await predictService.getPredictionResult();
+
+		const updateTime = moment();
+		var newPredictions = [];
+		for (const result of results) {
+			logger.info(
+				`creating prediction ${updateTime.format('YYYY-MM-DD HH:mm:SS')} - ${
+					result.fixtureId
+				} - ${result.Country} - ${result.League} - ${result.hname} - ${
+					result.aname
+				}`
+			);
+
+			const newPrediction = await db.predictions.create({
+				fixtureId: result.fixtureId,
+				version: version.length === 0 ? defaultVersion : version,
+				update: updateTime,
+				rateHome: result.rateH,
+				scoreHome: result.scoreH,
+				rateDraw: result.rateD,
+				scoreDraw: result.scoreD,
+				rateAway: result.rateA,
+				scoreAway: result.scoreA,
+				rateToWin: result.RtW,
+				rateToLost: result.RtL,
+				oddMedianHome: result.odd50Home,
+				oddMedianDraw: result.odd50Draw,
+				oddMedianAway: result.odd50Away,
+				isReverse: !result.isH,
+				betHome: result.DoH.length > 0,
+				betDraw: result.DoD.length > 0,
+				betAway: result.DoA.length > 0,
+				betHomeWinGreater: result.DoH_C.length > 0,
+			});
+
+			newPredictions.push(newPrediction);
+		}
+
+		return newPredictions;
+	} catch (err) {
+		logger.error(
+			`failed to get latest prediction result with error ${err}, please check the service!!!`
+		);
+	}
+};
 
 async function updateLeagues() {
 	try {

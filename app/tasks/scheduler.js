@@ -15,6 +15,8 @@ const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
 const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 const DAILY_UPDATE_LEAGUES = 'daily update leagues';
 const DAILY_UPDATE_TEAMS = 'daily update teams';
+const FIVEMINUES_UPDATE_PREDICTION_V_1_0 =
+	'5 minues update prediction for v1.0';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
@@ -66,6 +68,11 @@ exports.scheduledDailyTask = () =>
 	schedule.scheduleJob('45 23 * * *', async () => {
 		updateLeagues(DAILY_UPDATE_LEAGUES);
 		updateTeams(DAILY_UPDATE_TEAMS);
+	});
+
+exports.scheduledFiveMinuesTask = () =>
+	schedule.scheduleJob('*/5 * * * *', async () => {
+		updatePrediction(FIVEMINUES_UPDATE_PREDICTION_V_1_0, 'v1.0');
 	});
 
 const updateFixtureQuarterly = async (type, date) => {
@@ -183,6 +190,29 @@ const updateTeams = async (type) => {
 		} catch (err) {
 			logger.error(`failed update the teams on ${type} - error: ${err}`);
 			schedulerLog.message = `failed update the teams on ${type} - error: ${err}`;
+			schedulerLog.success = false;
+		}
+		schedulerLog.end = moment();
+		await schedulerLog.save();
+	}
+};
+
+const updatePrediction = async (type, version) => {
+	logger.info(`======= ${type} =======`);
+	const scheduleRunning = await existingSchedule(type);
+	if (!scheduleRunning) {
+		const schedulerLog = await db.schedulerLogs.create({
+			type: type,
+			start: moment(),
+		});
+		try {
+			const updatePredictions = await tasks.taskPredictionUpdate(version);
+			logger.info(`${updatePredictions.length} fixtures updated`);
+			schedulerLog.message = `${type} - ${updatePredictions.length} fixtures updated`;
+			schedulerLog.success = true;
+		} catch (err) {
+			logger.error(`failed update the predictions on ${type} - error: ${err}`);
+			schedulerLog.message = `failed update the predictions on ${type} - error: ${err}`;
 			schedulerLog.success = false;
 		}
 		schedulerLog.end = moment();

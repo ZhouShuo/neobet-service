@@ -6,8 +6,8 @@ exports.getPredictionResult = async () => {
 	try {
 		logger.info('request from ' + options.url);
 		var response = await axios.request(options);
-		var predictions = response.data.response;
-		logger.info('response :' + response);
+		var predictions = response.data;
+		logger.debug('response :' + response);
 
 		return predictions;
 	} catch (error) {
@@ -20,8 +20,8 @@ exports.getPredictionResult = async () => {
 
 function getOptions(subUrl) {
 	options = {
-		method: 'POST',
-		url: 'http://localhost:8080/get-prediction-json',
+		method: 'GET',
+		url: 'https://neobet-prediction-service.azurewebsites.net/get-prediction-json',
 	};
 	return options;
 }
