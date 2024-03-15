@@ -17,6 +17,8 @@ const DAILY_UPDATE_LEAGUES = 'daily update leagues';
 const DAILY_UPDATE_TEAMS = 'daily update teams';
 const FIVEMINUES_UPDATE_PREDICTION_V_1_0 =
 	'5 minues update prediction for v1.0';
+const FIVEMINUES_UPDATE_PREDICTION_V_1_1 =
+	'5 minues update prediction for v1.1';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
@@ -72,7 +74,7 @@ exports.scheduledDailyTask = () =>
 
 exports.scheduledFiveMinuesTask = () =>
 	schedule.scheduleJob('*/5 * * * *', async () => {
-		updatePrediction(FIVEMINUES_UPDATE_PREDICTION_V_1_0, 'v1.0');
+		updatePrediction(FIVEMINUES_UPDATE_PREDICTION_V_1_1, 'v1.1');
 	});
 
 const updateFixtureQuarterly = async (type, date) => {
