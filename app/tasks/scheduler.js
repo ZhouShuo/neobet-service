@@ -15,10 +15,7 @@ const HOURLY_UPDATE_ODD_TOMORROW = 'Hourly update odd tomorrow';
 const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 const DAILY_UPDATE_LEAGUES = 'daily update leagues';
 const DAILY_UPDATE_TEAMS = 'daily update teams';
-const FIVEMINUES_UPDATE_PREDICTION_V_1_0 =
-	'5 minues update prediction for v1.0';
-const FIVEMINUES_UPDATE_PREDICTION_V_1_1 =
-	'5 minues update prediction for v1.1';
+const FIVEMINUES_UPDATE_PREDICTION = '5 minues update predictions';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
@@ -74,7 +71,7 @@ exports.scheduledDailyTask = () =>
 
 exports.scheduledFiveMinuesTask = () =>
 	schedule.scheduleJob('*/5 * * * *', async () => {
-		updatePrediction(FIVEMINUES_UPDATE_PREDICTION_V_1_1, 'v1.1');
+		updatePrediction(FIVEMINUES_UPDATE_PREDICTION);
 	});
 
 const updateFixtureQuarterly = async (type, date) => {
@@ -199,7 +196,7 @@ const updateTeams = async (type) => {
 	}
 };
 
-const updatePrediction = async (type, version) => {
+const updatePrediction = async (type) => {
 	logger.info(`======= ${type} =======`);
 	const scheduleRunning = await existingSchedule(type);
 	if (!scheduleRunning) {
@@ -208,7 +205,7 @@ const updatePrediction = async (type, version) => {
 			start: moment(),
 		});
 		try {
-			const updatePredictions = await tasks.taskPredictionUpdate(version);
+			const updatePredictions = await tasks.taskPredictionUpdate();
 			logger.info(`${updatePredictions.length} fixtures updated`);
 			schedulerLog.message = `${type} - ${updatePredictions.length} fixtures updated`;
 			schedulerLog.success = true;

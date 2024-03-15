@@ -1547,10 +1547,11 @@ exports.taskTeamsUpdate = async () => {
 	}
 };
 
-exports.taskPredictionUpdate = async (version) => {
+exports.taskPredictionUpdate = async () => {
 	try {
 		let defaultVersion = 'v1.0';
 		const results = await predictService.getPredictionResult();
+		const version = await predictService.getPredictionVersion();
 
 		const updateTime = moment();
 		var newPredictions = [];
@@ -1565,7 +1566,7 @@ exports.taskPredictionUpdate = async (version) => {
 
 			const newPrediction = await db.predictions.create({
 				fixtureId: result.fixtureId,
-				version: version.length === 0 ? defaultVersion : version,
+				version: version.version.length === 0 ? defaultVersion : version.version,
 				update: updateTime,
 				rateHome: result.rateH,
 				scoreHome: result.scoreH,
