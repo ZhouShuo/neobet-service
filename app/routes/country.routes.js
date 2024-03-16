@@ -7,7 +7,10 @@ module.exports = (app) => {
 	router.get('/', countries.findAll);
 
 	// Retrieve a single Country with id
-	router.get('/:name', countries.findByName);
+	router.get('/byName/:name', countries.findByName);
+
+	// Retrieve a single Country with Id
+	router.get('/:id', countries.findById);
 
 	app.use('/api/countries', router);
 };

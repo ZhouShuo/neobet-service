@@ -51,5 +51,5 @@ module.exports = (app) => {
 		}
 	});
 
-	app.use('/api/prediction', predictionRouter);
+	app.use('/api/predictions', predictionRouter);
 };

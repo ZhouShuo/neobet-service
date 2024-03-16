@@ -4,7 +4,8 @@
   "description": "neo bet app data service in backend",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "nodemon",
+    "start": "node server.js"
   },
   "author": "zhoushuo",
   "license": "ISC",
