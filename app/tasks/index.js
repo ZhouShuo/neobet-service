@@ -1547,11 +1547,11 @@ exports.taskTeamsUpdate = async () => {
 	}
 };
 
-exports.taskPredictionUpdate = async (useOldVersion) => {
+exports.taskPredictionUpdate = async (serviceUrl) => {
 	try {
 		let defaultVersion = 'v1.0';
-		const results = await predictService.getPredictionResult(useOldVersion);
-		const version = await predictService.getPredictionVersion(useOldVersion);
+		const results = await predictService.getPredictionResult(serviceUrl);
+		const version = await predictService.getPredictionVersion(serviceUrl);
 
 		const updateTime = moment();
 		var newPredictions = [];
