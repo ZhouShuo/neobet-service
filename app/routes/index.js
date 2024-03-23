@@ -4,6 +4,7 @@ exports.default = (app) => {
 	require('./league.routes')(app);
 	require('./prediction.routes')(app);
 	require('./scheduler-logs.routes')(app);
+	require('./fixture.routes')(app);
 
 	require('./task.routes')(app);
 };
