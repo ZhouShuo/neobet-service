@@ -16,6 +16,7 @@ const TENMINUES_UPDATE_ODD_NEXT_HOUR = '10 minues update odd for next hour';
 const DAILY_UPDATE_LEAGUES = 'daily update leagues';
 const DAILY_UPDATE_TEAMS = 'daily update teams';
 const FIVEMINUES_UPDATE_PREDICTION = '5 minues update predictions';
+const SIXMINUES_UPDATE_PREDICTION = '6 minues update predictions';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
 	schedule.scheduleJob('30 * * * *', async () => {
@@ -69,9 +70,12 @@ exports.scheduledDailyTask = () =>
 		updateTeams(DAILY_UPDATE_TEAMS);
 	});
 
-exports.scheduledFiveMinuesTask = () =>
-	schedule.scheduleJob('*/5 * * * *', async () => {
-		updatePrediction(FIVEMINUES_UPDATE_PREDICTION);
+exports.scheduledSixMinuesTask = () =>
+	schedule.scheduleJob('*/6 * * * *', async () => {
+		const predictionsServices = await enabledPredictionServices();
+		for (const predictionService of predictionsServices) {
+			updatePrediction(SIXMINUES_UPDATE_PREDICTION, predictionService);
+		}
 	});
 
 const updateFixtureQuarterly = async (type, date) => {
@@ -196,25 +200,30 @@ const updateTeams = async (type) => {
 	}
 };
 
-const updatePrediction = async (type) => {
-	logger.info(`======= ${type} =======`);
-	const scheduleRunning = await existingSchedule(type);
+const updatePrediction = async (type, predictionService) => {
+	const fullType = `${type}-${predictionService.version}`;
+	logger.info(`======= ${fullType} =======`);
+	const scheduleRunning = await existingSchedule(fullType);
 	if (!scheduleRunning) {
 		const schedulerLog = await db.schedulerLogs.create({
-			type: type,
-			start: moment(),
+			type: fullType,
+			start: new Date(),
 		});
 		try {
-			const updatePredictions = await tasks.taskPredictionUpdate();
+			const updatePredictions = await tasks.taskPredictionUpdate(
+				predictionService.serviceUrl
+			);
 			logger.info(`${updatePredictions.length} fixtures updated`);
-			schedulerLog.message = `${type} - ${updatePredictions.length} fixtures updated`;
+			schedulerLog.message = `${fullType} - ${updatePredictions.length} fixtures updated`;
 			schedulerLog.success = true;
 		} catch (err) {
-			logger.error(`failed update the predictions on ${type} - error: ${err}`);
-			schedulerLog.message = `failed update the predictions on ${type} - error: ${err}`;
+			logger.error(
+				`failed update the predictions on ${fullType} - error: ${err}`
+			);
+			schedulerLog.message = `failed update the predictions on ${fullType} - error: ${err}`;
 			schedulerLog.success = false;
 		}
-		schedulerLog.end = moment();
+		schedulerLog.end = new Date();
 		await schedulerLog.save();
 	}
 };
@@ -233,4 +242,8 @@ const existingSchedule = async (type) => {
 		logger.info(`==== ${type} scheduler is not running`);
 		return false;
 	}
+};
+
+const enabledPredictionServices = async () => {
+	return await db.predictionsService.findAll({ where: { enabled: true } });
 };

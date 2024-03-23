@@ -92,5 +92,10 @@ db.schedulerLogs = require('./scheduler_logs.model.js')(sequelize, Sequelize);
 db.predictions = require('./prediction.model.js')(sequelize, Sequelize);
 db.fixtures.hasMany(db.predictions);
 db.predictions.belongsTo(db.fixtures);
+// prediction service table
+db.predictionsService = require('./prediction_service.model.js')(
+	sequelize,
+	Sequelize
+);
 
 module.exports = db;

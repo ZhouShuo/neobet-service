@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require("cors");
+const cors = require('cors');
 
 const app = express();
 
@@ -42,9 +42,10 @@ app.listen(PORT, () => {
 });
 
 const scheduler = require('./app/tasks/scheduler');
-// scheduler.scheduledHalfHourTask();
-// scheduler.scheduledQuarterTask();
-// scheduler.scheduledHourlyTask();
-// scheduler.scheduledMinuesTask();
-// scheduler.scheduledDailyTask();
-// scheduler.scheduledFiveMinuesTask();
+scheduler.scheduledHalfHourTask();
+scheduler.scheduledQuarterTask();
+scheduler.scheduledHourlyTask();
+scheduler.scheduledMinuesTask();
+scheduler.scheduledDailyTask();
+scheduler.scheduledSixMinuesTask();
+

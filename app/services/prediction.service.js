@@ -1,8 +1,8 @@
 const axios = require('axios');
 const logger = require('../config/logger.config')('axios');
 
-exports.getPredictionResult = async () => {
-	const options = getOptions('get-prediction-json');
+exports.getPredictionResult = async (serviceUrl) => {
+	const options = getOptions('get-prediction-json', serviceUrl);
 	try {
 		logger.info('request from ' + options.url);
 		var response = await axios.request(options);
@@ -18,8 +18,8 @@ exports.getPredictionResult = async () => {
 	}
 };
 
-exports.getPredictionVersion = async () => {
-	const options = getOptions('version');
+exports.getPredictionVersion = async (serviceUrl) => {
+	const options = getOptions('version', serviceUrl);
 	try {
 		logger.info('request from ' + options.url);
 		var response = await axios.request(options);
@@ -35,10 +35,10 @@ exports.getPredictionVersion = async () => {
 	}
 };
 
-function getOptions(subUrl) {
+function getOptions(subUrl, baseUrl) {
 	options = {
 		method: 'GET',
-		url: `https://neobet-prediction-service.azurewebsites.net/${subUrl}`,
+		url: `${baseUrl}/${subUrl}`,
 	};
 	return options;
 }
