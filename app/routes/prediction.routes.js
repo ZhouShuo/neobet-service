@@ -18,6 +18,19 @@ module.exports = (app) => {
 		return res.status(200).send(result);
 	});
 
+	// the newest prediction for the fixture
+	predictionRouter.get('/:id/:version/newest', async (req, res) => {
+		const fixtureId = req.params.id;
+		const version = req.params.version;
+
+		const result = await predictionController.getNewestByFixtureId(
+			fixtureId,
+			version
+		);
+
+		return res.status(200).send(result);
+	});
+
 	// Retrieve upcoming fixture prediction by limit count
 	predictionRouter.get('/upcoming/:count', async (req, res) => {
 		const count = req.params.count;
