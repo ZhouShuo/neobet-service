@@ -97,5 +97,15 @@ db.predictionsService = require('./prediction_service.model.js')(
 	sequelize,
 	Sequelize
 );
+// player table
+db.player = require('./player.model.js')(sequelize, Sequelize);
+// fixture event table
+db.fixtureEvents = require('./fixture_event.model.js')(sequelize, Sequelize);
+db.fixtures.hasMany(db.fixtureEvents);
+db.fixtureEvents.belongsTo(db.fixtures);
+db.fixtureTeams.hasMany(db.fixtureEvents);
+db.fixtureEvents.belongsTo(db.fixtureTeams);
+db.player.hasMany(db.fixtureEvents);
+db.fixtureEvents.belongsTo(db.player);
 
 module.exports = db;
