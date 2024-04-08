@@ -15,6 +15,13 @@ exports.getByFixtureId = async (fixtureId) => {
 	});
 };
 
+exports.getNewestByFixtureId = async (fixtureId, version) => {
+	return await db.predictions.findOne({
+		where: { fixtureId: fixtureId, version: version },
+		order: [['update', 'DESC']],
+	});
+};
+
 exports.getRecentPredictionFixtures = async (count) => {
 	const fixtures = await db.fixtures.findAll({
 		where: {
