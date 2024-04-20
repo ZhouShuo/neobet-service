@@ -97,5 +97,7 @@ db.predictionsService = require('./prediction_service.model.js')(
 	sequelize,
 	Sequelize
 );
+// bookkeeping
+db.bookkeeping = require('./bookkeeping.model.js')(sequelize, Sequelize);
 
 module.exports = db;
