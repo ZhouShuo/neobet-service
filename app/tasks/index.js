@@ -1264,7 +1264,13 @@ async function createOddsFromJSON(odd) {
 	for (const bookmaker of odd.bookmakers) {
 		for (const bet of bookmaker.bets) {
 			//if (bet.id === 1 || bet.id === 12) {
-			if (bet.id === 1) {
+			if (
+				bet.id === 1 ||
+				bet.id === 5 ||
+				bet.id === 13 ||
+				bet.id === 9 ||
+				bet.id === 18
+			) {
 				for (const value of bet.values) {
 					// if this updated
 					var newOdd = await db.odds.create({
@@ -1566,7 +1572,8 @@ exports.taskPredictionUpdate = async (serviceUrl) => {
 
 			const newPrediction = await db.predictions.create({
 				fixtureId: result.fixtureId,
-				version: version.version.length === 0 ? defaultVersion : version.version,
+				version:
+					version.version.length === 0 ? defaultVersion : version.version,
 				update: updateTime,
 				rateHome: result.rateH,
 				scoreHome: result.scoreH,
