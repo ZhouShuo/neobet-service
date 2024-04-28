@@ -19,33 +19,10 @@ const FIVEMINUES_UPDATE_PREDICTION = '5 minues update predictions';
 const SIXMINUES_UPDATE_PREDICTION = '6 minues update predictions';
 // setup a 15 min schedule job to update recent odds and fixtures
 exports.scheduledHalfHourTask = () =>
-	schedule.scheduleJob('30 * * * *', async () => {
-		let recentDates = [];
-		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+	schedule.scheduleJob('*/30 * * * *', async () => {
 		const today = moment().format('YYYY-MM-DD');
-		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-
-		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
 		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TODAY, today);
-		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
-		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
 		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TODAY, today);
-		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TOMORROW, tomorrow);
-	});
-
-exports.scheduledQuarterTask = () =>
-	schedule.scheduleJob('0 * * * *', async () => {
-		let recentDates = [];
-		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
-		const today = moment().format('YYYY-MM-DD');
-		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-
-		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
-		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TODAY, today);
-		//updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
-		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
-		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TODAY, today);
-		//updateOddsQuarterly(QUARTERLY_UPDATE_ODD_TOMORROW, tomorrow);
 	});
 
 exports.scheduledMinuesTask = () =>
@@ -55,14 +32,21 @@ exports.scheduledMinuesTask = () =>
 		updateOddsUpcoming(TENMINUES_UPDATE_ODD_NEXT_HOUR, hours);
 	});
 
-exports.scheduledHourlyTask = () =>
+exports.scheduledHourlyTask = () => {
 	schedule.scheduleJob('15 */2 * * *', async () => {
-		let recentDates = [];
 		const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 
 		updateFixtureQuarterly(HOURLY_UPDATE_FIXTURE_TOMORROW, tomorrow);
 		updateOddsQuarterly(HOURLY_UPDATE_ODD_TOMORROW, tomorrow);
 	});
+
+	schedule.scheduleJob('45 */2 * * *', async () => {
+		const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+
+		updateFixtureQuarterly(QUARTERLY_UPDATE_FIXTURE_YESTERDAY, yesterday);
+		updateOddsQuarterly(QUARTERLY_UPDATE_ODD_YESTERDAY, yesterday);
+	});
+};
 
 exports.scheduledDailyTask = () =>
 	schedule.scheduleJob('45 23 * * *', async () => {
