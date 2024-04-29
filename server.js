@@ -43,9 +43,7 @@ app.listen(PORT, () => {
 
 const scheduler = require('./app/tasks/scheduler');
 scheduler.scheduledHalfHourTask();
-scheduler.scheduledQuarterTask();
 scheduler.scheduledHourlyTask();
 scheduler.scheduledMinuesTask();
 scheduler.scheduledDailyTask();
 scheduler.scheduledSixMinuesTask();
-
