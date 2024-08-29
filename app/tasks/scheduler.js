@@ -49,7 +49,7 @@ exports.scheduledHourlyTask = () => {
 };
 
 exports.scheduledDailyTask = () =>
-	schedule.scheduleJob('45 23 * * *', async () => {
+	schedule.scheduleJob('45 4 * * *', async () => {
 		updateLeagues(DAILY_UPDATE_LEAGUES);
 		updateTeams(DAILY_UPDATE_TEAMS);
 	});
