@@ -17,6 +17,15 @@ axios.interceptors.response.use(response => {
   return response
 })
 */
+function handleError(error) {
+  if (error.response) {
+    logger.error(`data: ${error.response.data}`);
+    logger.error(`status: ${error.response.status}`);
+    logger.error(`headers: ${error.response.headers}`);
+  }
+  logger.error(`message: ${error.message}`);
+}
+
 function getOptions(subUrl) {
   options = {
     method: "GET",
@@ -39,7 +48,7 @@ exports.getSeasons = async () => {
 
     return seasons;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -54,7 +63,7 @@ exports.getCountries = async () => {
 
     return countries;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -69,7 +78,7 @@ exports.getCountriesSecond = async () => {
 
     return countries;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -84,7 +93,7 @@ exports.getLeagues = async () => {
 
     return leagues;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -99,7 +108,7 @@ exports.getLeagueById = async (id) => {
 
     return leagues;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -114,7 +123,7 @@ exports.getTimezones = async () => {
 
     return timezones;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -129,7 +138,7 @@ exports.getTeams = async (country) => {
 
     return teams;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -146,7 +155,7 @@ exports.getRounds = async (league, season) => {
 
     return rounds;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -163,7 +172,7 @@ exports.getFixtures = async (league, season, round) => {
 
     return fixtures;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -180,7 +189,7 @@ exports.getFixturesBySeason = async (league, season) => {
 
     return fixtures;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -195,7 +204,7 @@ exports.getFixturesById = async (id) => {
 
     return fixtures;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -210,7 +219,7 @@ exports.getFixturesByDate = async (date) => {
 
     return fixtures;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -225,7 +234,7 @@ exports.getBets = async () => {
 
     return bets;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -240,7 +249,7 @@ exports.getBookmakers = async () => {
 
     return bookmakers;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -272,7 +281,7 @@ exports.getOdds = async (league, season) => {
 
     return returnOdds;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -303,7 +312,7 @@ exports.getOddsByFixtureId = async (fixtureId) => {
 
     return returnOdds;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
@@ -333,7 +342,7 @@ exports.getOddsByDate = async (date) => {
 
     return returnOdds;
   } catch (error) {
-    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    handleError(error);
     return error;
   }
 };
