@@ -1,5 +1,4 @@
 const axios = require("axios");
-const axiosRetry = require("axios-retry");
 const logger = require("../config/logger.config")("axios");
 const RateLimiter = require("limiter").RateLimiter;
 const limiter = new RateLimiter({
