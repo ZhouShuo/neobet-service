@@ -30,6 +30,8 @@ function getOptions(subUrl) {
   options = {
     method: "GET",
     url: "https://api-football-v1.p.rapidapi.com/v3/" + subUrl,
+    timeout: 60000, //optional
+    httpsAgent: new https.Agent({ keepAlive: true }),
     headers: {
       "X-RapidAPI-Key": "86e156c3b7msh26001d6cfc6be0ep1591e7jsnbde1dcf4ad1c",
       "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com",
