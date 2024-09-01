@@ -1,9 +1,10 @@
-const axios = require('axios');
-const logger = require('../config/logger.config')('axios');
-const RateLimiter = require('limiter').RateLimiter;
+const axios = require("axios");
+const axiosRetry = require("axios-retry");
+const logger = require("../config/logger.config")("axios");
+const RateLimiter = require("limiter").RateLimiter;
 const limiter = new RateLimiter({
-	tokensPerInterval: 1,
-	interval: 1000,
+  tokensPerInterval: 1,
+  interval: 1000,
 });
 
 /*
@@ -18,322 +19,322 @@ axios.interceptors.response.use(response => {
 })
 */
 function getOptions(subUrl) {
-	options = {
-		method: 'GET',
-		url: 'https://api-football-v1.p.rapidapi.com/v3/' + subUrl,
-		headers: {
-			'X-RapidAPI-Key': '86e156c3b7msh26001d6cfc6be0ep1591e7jsnbde1dcf4ad1c',
-			'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
-		},
-	};
-	return options;
+  options = {
+    method: "GET",
+    url: "https://api-football-v1.p.rapidapi.com/v3/" + subUrl,
+    headers: {
+      "X-RapidAPI-Key": "86e156c3b7msh26001d6cfc6be0ep1591e7jsnbde1dcf4ad1c",
+      "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com",
+    },
+  };
+  return options;
 }
 
 exports.getSeasons = async () => {
-	try {
-		var options = getOptions('leagues/seasons');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var seasons = response.data.response;
-		logger.info('response :' + seasons);
+  try {
+    var options = getOptions("leagues/seasons");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var seasons = response.data.response;
+    logger.info("response :" + seasons);
 
-		return seasons;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return seasons;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getCountries = async () => {
-	try {
-		var options = getOptions('teams/countries');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var countries = response.data.response;
-		logger.info('response :' + countries);
+  try {
+    var options = getOptions("teams/countries");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var countries = response.data.response;
+    logger.info("response :" + countries);
 
-		return countries;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return countries;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getCountriesSecond = async () => {
-	try {
-		var options = getOptions('countries');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var countries = response.data.response;
-		logger.info('response :' + countries);
+  try {
+    var options = getOptions("countries");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var countries = response.data.response;
+    logger.info("response :" + countries);
 
-		return countries;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return countries;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getLeagues = async () => {
-	try {
-		var options = getOptions('leagues');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var leagues = response.data.response;
-		logger.info('response :' + leagues);
+  try {
+    var options = getOptions("leagues");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var leagues = response.data.response;
+    logger.info("response :" + leagues);
 
-		return leagues;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return leagues;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getLeagueById = async (id) => {
-	try {
-		var options = getOptions(`leagues?id=${id}`);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var leagues = response.data.response;
-		logger.info('response :' + leagues);
+  try {
+    var options = getOptions(`leagues?id=${id}`);
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var leagues = response.data.response;
+    logger.info("response :" + leagues);
 
-		return leagues;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return leagues;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getTimezones = async () => {
-	try {
-		var options = getOptions('timezone');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var timezones = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions("timezone");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var timezones = response.data.response;
+    logger.info("response :" + response);
 
-		return timezones;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return timezones;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getTeams = async (country) => {
-	try {
-		var options = getOptions(`teams?country=${country.name}`);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var teams = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(`teams?country=${country.name}`);
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var teams = response.data.response;
+    logger.info("response :" + response);
 
-		return teams;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return teams;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getRounds = async (league, season) => {
-	try {
-		var options = getOptions(
-			`fixtures/rounds?league=${league.id}&season=${season.year}`
-		);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var rounds = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(
+      `fixtures/rounds?league=${league.id}&season=${season.year}`,
+    );
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var rounds = response.data.response;
+    logger.info("response :" + response);
 
-		return rounds;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return rounds;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getFixtures = async (league, season, round) => {
-	try {
-		var options = getOptions(
-			`fixtures?league=${league.id}&season=${season.year}&round=${round.name}`
-		);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var fixtures = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(
+      `fixtures?league=${league.id}&season=${season.year}&round=${round.name}`,
+    );
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var fixtures = response.data.response;
+    logger.info("response :" + response);
 
-		return fixtures;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return fixtures;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getFixturesBySeason = async (league, season) => {
-	try {
-		var options = getOptions(
-			`fixtures?league=${league.id}&season=${season.year}`
-		);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var fixtures = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(
+      `fixtures?league=${league.id}&season=${season.year}`,
+    );
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var fixtures = response.data.response;
+    logger.info("response :" + response);
 
-		return fixtures;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return fixtures;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getFixturesById = async (id) => {
-	try {
-		var options = getOptions(`fixtures?id=${id}`);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var fixtures = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(`fixtures?id=${id}`);
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var fixtures = response.data.response;
+    logger.info("response :" + response);
 
-		return fixtures;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return fixtures;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getFixturesByDate = async (date) => {
-	try {
-		var options = getOptions(`fixtures?date=${date}`);
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var fixtures = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions(`fixtures?date=${date}`);
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var fixtures = response.data.response;
+    logger.info("response :" + response);
 
-		return fixtures;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return fixtures;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getBets = async () => {
-	try {
-		var options = getOptions('odds/bets');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var bets = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions("odds/bets");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var bets = response.data.response;
+    logger.info("response :" + response);
 
-		return bets;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return bets;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getBookmakers = async () => {
-	try {
-		var options = getOptions('odds/bookmakers');
-		logger.info('request from ' + options.url);
-		var response = await axios.request(options);
-		var bookmakers = response.data.response;
-		logger.info('response :' + response);
+  try {
+    var options = getOptions("odds/bookmakers");
+    logger.info("request from " + options.url);
+    var response = await axios.request(options);
+    var bookmakers = response.data.response;
+    logger.info("response :" + response);
 
-		return bookmakers;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return bookmakers;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getOdds = async (league, season) => {
-	try {
-		var returnOdds = [];
-		let currentPage = 1;
-		let totalPage = 1;
-		while (currentPage <= totalPage) {
-			// odds
-			var options = getOptions(
-				`odds?league=${league.id}&season=${season}&page=${currentPage}`
-			);
-			await limiter.removeTokens(1);
-			logger.info('request from ' + options.url);
-			var response = await axios.request(options);
-			var odds = response.data.response;
-			var paging = response.data.paging;
+  try {
+    var returnOdds = [];
+    let currentPage = 1;
+    let totalPage = 1;
+    while (currentPage <= totalPage) {
+      // odds
+      var options = getOptions(
+        `odds?league=${league.id}&season=${season}&page=${currentPage}`,
+      );
+      await limiter.removeTokens(1);
+      logger.info("request from " + options.url);
+      var response = await axios.request(options);
+      var odds = response.data.response;
+      var paging = response.data.paging;
 
-			if (paging != null) {
-				totalPage = paging.total;
-			}
-			logger.info(`${currentPage} total odds is : ${odds.length}`);
+      if (paging != null) {
+        totalPage = paging.total;
+      }
+      logger.info(`${currentPage} total odds is : ${odds.length}`);
 
-			currentPage = currentPage + 1;
-			returnOdds = returnOdds.concat(odds);
-		}
+      currentPage = currentPage + 1;
+      returnOdds = returnOdds.concat(odds);
+    }
 
-		return returnOdds;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return returnOdds;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getOddsByFixtureId = async (fixtureId) => {
-	try {
-		var returnOdds = [];
-		let currentPage = 1;
-		let totalPage = 1;
-		while (currentPage <= totalPage) {
-			// odds
-			var options = getOptions(`odds?fixture=${fixtureId}&page=${currentPage}`);
+  try {
+    var returnOdds = [];
+    let currentPage = 1;
+    let totalPage = 1;
+    while (currentPage <= totalPage) {
+      // odds
+      var options = getOptions(`odds?fixture=${fixtureId}&page=${currentPage}`);
 
-			await limiter.removeTokens(1);
-			logger.info('request from ' + options.url);
-			var response = await axios.request(options);
-			var odds = response.data.response;
-			var paging = response.data.paging;
+      await limiter.removeTokens(1);
+      logger.info("request from " + options.url);
+      var response = await axios.request(options);
+      var odds = response.data.response;
+      var paging = response.data.paging;
 
-			if (paging != null) {
-				totalPage = paging.total;
-			}
-			logger.info(`${currentPage} total odds is : ${odds.length}`);
+      if (paging != null) {
+        totalPage = paging.total;
+      }
+      logger.info(`${currentPage} total odds is : ${odds.length}`);
 
-			currentPage = currentPage + 1;
-			returnOdds = returnOdds.concat(odds);
-		}
+      currentPage = currentPage + 1;
+      returnOdds = returnOdds.concat(odds);
+    }
 
-		return returnOdds;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return returnOdds;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
 
 exports.getOddsByDate = async (date) => {
-	try {
-		var returnOdds = [];
-		let currentPage = 1;
-		let totalPage = 1;
-		while (currentPage <= totalPage) {
-			// odds
-			var options = getOptions(`odds?date=${date}&page=${currentPage}`);
-			await limiter.removeTokens(1);
-			logger.info('request from ' + options.url);
-			var response = await axios.request(options);
-			var odds = response.data.response;
-			var paging = response.data.paging;
+  try {
+    var returnOdds = [];
+    let currentPage = 1;
+    let totalPage = 1;
+    while (currentPage <= totalPage) {
+      // odds
+      var options = getOptions(`odds?date=${date}&page=${currentPage}`);
+      await limiter.removeTokens(1);
+      logger.info("request from " + options.url);
+      var response = await axios.request(options);
+      var odds = response.data.response;
+      var paging = response.data.paging;
 
-			if (paging != null) {
-				totalPage = paging.total;
-			}
-			logger.info(`${currentPage} total odds is : ${odds.length}`);
+      if (paging != null) {
+        totalPage = paging.total;
+      }
+      logger.info(`${currentPage} total odds is : ${odds.length}`);
 
-			currentPage = currentPage + 1;
-			returnOdds = returnOdds.concat(odds);
-		}
+      currentPage = currentPage + 1;
+      returnOdds = returnOdds.concat(odds);
+    }
 
-		return returnOdds;
-	} catch (error) {
-		logger.error(error);
-		return error;
-	}
+    return returnOdds;
+  } catch (error) {
+    logger.error(`status: ${error.response.status} message: ${error.message}`);
+    return error;
+  }
 };
