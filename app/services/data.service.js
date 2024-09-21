@@ -1,5 +1,6 @@
 const axios = require("axios");
 const https = require("https");
+const axiosRetry = require("axios-retry").default;
 const logger = require("../config/logger.config")("axios");
 const RateLimiter = require("limiter").RateLimiter;
 const limiter = new RateLimiter({
@@ -7,17 +8,22 @@ const limiter = new RateLimiter({
   interval: 1000,
 });
 
-/*
-axios.interceptors.request.use(request => {
-  logger.info('Starting Request', JSON.stringify(request, null, 2))
-  return request
-})
+// Retry failed requests up to 3 times, with exponential backoff delay
+axiosRetry(axios, {
+  retries: 3, // Number of retry attempts
+  retryDelay: (retryCount) => {
+    return retryCount * 2000; // 2 seconds * retryCount delay (exponential backoff)
+  },
+  retryCondition: (error) => {
+    // Retry on network errors or if the request timed out
+    return (
+      error.code === "ECONNABORTED" ||
+      error.code === "ETIMEDOUT" ||
+      error.response.status >= 500
+    );
+  },
+});
 
-axios.interceptors.response.use(response => {
-  logger.info('Response:', JSON.stringify(response, null, 2))
-  return response
-})
-*/
 function handleError(error) {
   if (error.response) {
     logger.error(`data: ${error.response.data}`);
@@ -31,7 +37,7 @@ function getOptions(subUrl) {
   options = {
     method: "GET",
     url: "https://api-football-v1.p.rapidapi.com/v3/" + subUrl,
-    timeout: 600000, //optional
+    timeout: 60000, //optional
     httpsAgent: new https.Agent({ keepAlive: true }),
     headers: {
       "X-RapidAPI-Key": "86e156c3b7msh26001d6cfc6be0ep1591e7jsnbde1dcf4ad1c",
