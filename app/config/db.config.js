@@ -10,7 +10,7 @@ module.exports = {
   // 	idle: 10000,
   // },
 
-  HOST: "62.234.26.77",
+  HOST: "10.2.20.16",
   USER: "neobet_admin",
   DB: "oldneobetdb",
   PASSWORD: "qzDvK2ro0LU0",

@@ -1,20 +1,20 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const app = express();
 
-const logger = require('./app/config/logger.config')('express');
+const logger = require("./app/config/logger.config")("express");
 
 // morgan for all http request logging
-const morganlogger = require('morgan')(
-	':method :url :status :res[content-length] - :response-time ms',
-	{
-		stream: {
-			write: (text) =>
-				require('./app/config/logger.config')('http').info(` ${text}`),
-		},
-	}
+const morganlogger = require("morgan")(
+  ":method :url :status :res[content-length] - :response-time ms",
+  {
+    stream: {
+      write: (text) =>
+        require("./app/config/logger.config")("http").info(` ${text}`),
+    },
+  },
 );
 
 app.use(morganlogger);
@@ -29,21 +29,21 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 // setup routes
-app.get('/', (req, res) => {
-	res.json({ message: 'Welcome to neo bet application.' });
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to neo bet application." });
 });
 
-require('./app/routes').default(app);
+require("./app/routes").default(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-	logger.info(`Server is running on port ${PORT}.`);
+  logger.info(`Server is running on port ${PORT}.`);
 });
 
-const scheduler = require('./app/tasks/scheduler');
+const scheduler = require("./app/tasks/scheduler");
 scheduler.scheduledHalfHourTask();
 scheduler.scheduledHourlyTask();
-scheduler.scheduledMinuesTask();
+//scheduler.scheduledMinuesTask();
 scheduler.scheduledDailyTask();
 scheduler.scheduledSixMinuesTask();
