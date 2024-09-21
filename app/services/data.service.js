@@ -17,7 +17,9 @@ axiosRetry(axios, {
   shouldResetTimeout: true,
   retryCondition: (error) => {
     // Retry on network errors or if the request timed out
-    logger.error(`start retry on error ==> message: ${error.message}`);
+    logger.error(
+      `start retry on error ==> code: ${error.code} message: ${error.message}`,
+    );
     return (
       error.code === "ECONNABORTED" ||
       error.code === "ETIMEDOUT" ||
