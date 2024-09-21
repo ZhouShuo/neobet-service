@@ -14,12 +14,19 @@ axiosRetry(axios, {
   retryDelay: (retryCount) => {
     return retryCount * 2000; // 2 seconds * retryCount delay (exponential backoff)
   },
+  shouldResetTimeout: true,
   retryCondition: (error) => {
     // Retry on network errors or if the request timed out
+    logger.error(`start retry on error ==> message: ${error.message}`);
     return (
       error.code === "ECONNABORTED" ||
       error.code === "ETIMEDOUT" ||
       error.response.status >= 500
+    );
+  },
+  onMaxRetryTimesExceeded: (error, retryCount) => {
+    logger.error(
+      `message: ${error.message}, retry count exceeded ${retryCount}`,
     );
   },
 });
