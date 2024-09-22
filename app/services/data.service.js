@@ -10,7 +10,7 @@ const limiter = new RateLimiter({
 
 // Retry failed requests up to 3 times, with exponential backoff delay
 axiosRetry(axios, {
-  retries: 3, // Number of retry attempts
+  retries: 6, // Number of retry attempts
   retryDelay: (retryCount) => {
     return retryCount * 2000; // 2 seconds * retryCount delay (exponential backoff)
   },
@@ -23,6 +23,8 @@ axiosRetry(axios, {
     return (
       error.code === "ECONNABORTED" ||
       error.code === "ETIMEDOUT" ||
+      error.code === "ECONNRESET" ||
+      error.code === "ERR_BAD_RESPONSE" ||
       error.response.status >= 500
     );
   },
